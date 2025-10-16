@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MySQL Backup Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <main class="container">
+        <h1 class="title">MySQL Backup (Schema & Data)</h1>
+
+
+        <form id="backupForm" class="card" autocomplete="off">
+            <div class="field">
+                <label>Host</label>
+                <input type="text" name="host" placeholder="127.0.0.1" required />
+            </div>
+            <div class="field">
+                <label>Database User</label>
+                <input type="text" name="user" placeholder="root" required />
+            </div>
+            <div class="field">
+                <label>Database Name</label>
+                <input type="text" name="database" placeholder="nama_database" required />
+            </div>
+            <div class="field">
+                <label>Database Password</label>
+                <input type="password" name="password" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="btn">Simpan & Backup</button>
+        </form>
+        <p class="hint">Hasil backup akan tersimpan ke <code>/backup/database/</code> dan bisa diunduh setelah selesai.
+        </p>
+        <p class="hint"><a href="/backups.html">Lihat daftar file backup →</a></p>
+
+
+        <footer class="footer">© <span id="y"></span> Backup Tool — IT Rindang Jati</footer>
+    </main>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>

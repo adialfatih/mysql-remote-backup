@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Backup Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .table th {
+            font-size: 14px;
+            color: #334155;
+            background: #f1f5f9;
+        }
+
+        .table td {
+            font-size: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 0;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-del {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-del:hover {
+            background: #dc2626;
+        }
+
+        .btn-dl {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-dl:hover {
+            background: #1d4ed8;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            margin: 0;
+        }
+
+        .backlink {
+            text-decoration: none;
+            font-weight: 700;
+            color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <div class="header">
+            <h1 class="title">Daftar Backup Database</h1>
+            <a class="backlink" href="/">← Kembali ke Halaman Utama</a>
+        </div>
+
+        <div class="card">
+            <table class="table" id="tbl">
+                <thead>
+                    <tr>
+                        <th style="width:64px">NO</th>
+                        <th>NAMA DB</th>
+                        <th>TANGGAL BACKUP</th>
+                        <th style="width:140px">JENIS</th>
+                        <th style="width:180px">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <tr>
+                        <td colspan="5">Memuat data…</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="footer">© <span id="y"></span> Backup Tool — Node.js + Express + WebSocket</footer>
+    </main>
+
+    <script>
+        document.getElementById('y').textContent = new Date().getFullYear();
+
+        async function loadList() {
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = `<tr><td colspan="5">Memuat data…</td></tr>`;
+            try {
+                const r = await fetch('/api/backups');
+                const j = await r.json();
+                if (!j.ok) throw new Error(j.error || 'Gagal mengambil data');
+
+                if (!j.items.length) {
+                    tbody.innerHTML = `<tr><td colspan="5">Belum ada file backup.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                j.items.forEach((it, idx) => {
+                    const tr = document.createElement('tr');
+
+                    const tdNo = document.createElement('td');
+                    tdNo.textContent = idx + 1;
+
+                    const tdDb = document.createElement('td');
+                    tdDb.textContent = it.db;
+
+                    const tdTgl = document.createElement('td');
+                    tdTgl.textContent = it.tsDisplay;
+
+                    const tdJenis = document.createElement('td');
+                    const span = document.createElement('span');
+                    span.className = 'tag';
+                    span.textContent = it.type; // Struktur / Data
+                    tdJenis.appendChild(span);
+
+                    const tdAksi = document.createElement('td');
+                    tdAksi.className = 'actions';
+
+                    // tombol download
+                    const btnDl = document.createElement('a');
+                    btnDl.className = 'btn-sm btn-dl';
+                    btnDl.href = it.url;
+                    btnDl.target = '_blank';
+                    btnDl.textContent = 'Unduh';
+                    tdAksi.appendChild(btnDl);
+
+                    // tombol hapus
+                    const btnDel = document.createElement('button');
+                    btnDel.className = 'btn-sm btn-del';
+                    btnDel.textContent = 'Hapus';
+                    btnDel.addEventListener('click', () => handleDelete(it.filename));
+                    tdAksi.appendChild(btnDel);
+
+                    tr.appendChild(tdNo);
+                    tr.appendChild(tdDb);
+                    tr.appendChild(tdTgl);
+                    tr.appendChild(tdJenis);
+                    tr.appendChild(tdAksi);
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5">Error: ${e.message || e}</td></tr>`;
+            }
+        }
+
+        async function handleDelete(filename) {
+            const cf = await Swal.fire({
+                title: 'Hapus file backup?',
+                text: filename,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal'
+            });
+            if (!cf.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/backups?file=' + encodeURIComponent(filename), { method: 'DELETE' });
+                const j = await res.json();
+                if (!j.ok) throw new Error(j.error || 'Gagal menghapus');
+                await Swal.fire({ icon: 'success', title: 'Terhapus', timer: 1200, showConfirmButton: false });
+                loadList();
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: e.message || String(e) });
+            }
+        }
+
+        loadList();
+    </script>
+</body>
+
+</html>

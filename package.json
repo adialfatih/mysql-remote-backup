@@ -1,0 +1,15 @@
+{
+    "name": "mysql-backup-express-ws",
+    "version": "1.0.0",
+    "description": "Backup MySQL schema and data via Node.js (Express + WebSocket + mysql2)",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "mysql2": "^3.10.0",
+        "uuid": "^11.0.2",
+        "ws": "^8.18.0"
+    }
+}
