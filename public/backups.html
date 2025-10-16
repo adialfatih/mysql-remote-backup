@@ -91,6 +91,34 @@
             font-weight: 700;
             color: #2563eb;
         }
+
+        .db-link {
+            color: #2563eb;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .db-link:hover {
+            text-decoration: underline;
+        }
+
+        td:nth-child(5),
+        th:nth-child(5) {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .container {
+            max-width: 1024px;
+        }
+
+        td:nth-child(6),
+        th:nth-child(6) {
+            /* kolom SIZE */
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
     </style>
 </head>
 
@@ -109,6 +137,8 @@
                         <th>NAMA DB</th>
                         <th>TANGGAL BACKUP</th>
                         <th style="width:140px">JENIS</th>
+                        <th style="width:140px">BACKUP BY</th>
+                        <th style="width:100px">SIZE</th>
                         <th style="width:180px">AKSI</th>
                     </tr>
                 </thead>
@@ -125,6 +155,48 @@
 
     <script>
         document.getElementById('y').textContent = new Date().getFullYear();
+        // const DB_MAP = {
+        //     "u670640922_grand_new_stok": "Database weaving samatex",
+        //     "u670640922_grand_stok_rjs": "Database weaving inspect pengiriman Rindang",
+        //     "u670640922_grand_new_ajl": "Database weaving monitoring AJL RJS",
+        //     "u670640922_spartrjs": "Database aplikasi sparepart RJS",
+        //     "u670640922_mitrasahabat": "Database aplikasi MSO",
+        //     "u670640922_pusatex": "Database aplikasi pusatex penjualan dan stok"
+        // };
+        const DB_META = {
+            "u670640922_grand_new_stok": { app: "database weaving samatex", by: "Bima" },
+            "u670640922_grand_stok_rjs": { app: "database weaving inspect pengiriman Rindang", by: "Adel" },
+            "u670640922_grand_new_ajl": { app: "database weaving monitoring AJL RJS", by: "Septi" },
+            "u670640922_spartrjs": { app: "database aplikasi sparepart RJS", by: "Nawa" },
+            "u670640922_mitrasahabat": { app: "database aplikasi MSO", by: "Bima" },
+            "u670640922_pusatex": { app: "database aplikasi pusatex penjualan dan stok", by: "Bima" }
+        };
+        function showDbInfo(dbname) {
+            const meta = DB_META[dbname];
+            let html;
+
+            if (meta && typeof meta === 'object') {
+                html = `
+      <div style="text-align:left">
+        <p><strong>Database:</strong> ${dbname}</p>
+        <p><strong>Aplikasi:</strong> ${meta.app}</p>
+        <p><strong>Backup by:</strong> ${meta.by}</p>
+      </div>`;
+            } else {
+                html = `
+      <div style="text-align:left">
+        <p><strong>Database:</strong> ${dbname}</p>
+        <p style="color:#ef4444"><em>Belum terdaftar di mapping aplikasi.</em></p>
+      </div>`;
+            }
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi Database',
+                html,
+                confirmButtonText: 'Tutup'
+            });
+        }
 
         async function loadList() {
             const tbody = document.getElementById('tbody');
@@ -143,25 +215,43 @@
                 j.items.forEach((it, idx) => {
                     const tr = document.createElement('tr');
 
+                    // NO
                     const tdNo = document.createElement('td');
                     tdNo.textContent = idx + 1;
 
+                    // NAMA DB (klik info)
                     const tdDb = document.createElement('td');
-                    tdDb.textContent = it.db;
+                    const a = document.createElement('a');
+                    a.className = 'db-link';
+                    a.textContent = it.db;
+                    a.href = 'javascript:void(0)';
+                    a.addEventListener('click', () => showDbInfo(it.db));
+                    tdDb.appendChild(a);
 
+                    // TANGGAL
                     const tdTgl = document.createElement('td');
                     tdTgl.textContent = it.tsDisplay;
 
+                    // JENIS
                     const tdJenis = document.createElement('td');
                     const span = document.createElement('span');
                     span.className = 'tag';
                     span.textContent = it.type; // Struktur / Data
                     tdJenis.appendChild(span);
 
+                    // BACKUP BY  ← (BARU)
+                    const tdBy = document.createElement('td');
+                    const meta = DB_META[it.db];
+                    tdBy.textContent = (meta && meta.by) ? meta.by : '-';
+
+                    // SIZE
+                    const tdSize = document.createElement('td');
+                    tdSize.textContent = it.size || '-';
+
+                    // AKSI
                     const tdAksi = document.createElement('td');
                     tdAksi.className = 'actions';
 
-                    // tombol download
                     const btnDl = document.createElement('a');
                     btnDl.className = 'btn-sm btn-dl';
                     btnDl.href = it.url;
@@ -169,17 +259,19 @@
                     btnDl.textContent = 'Unduh';
                     tdAksi.appendChild(btnDl);
 
-                    // tombol hapus
                     const btnDel = document.createElement('button');
                     btnDel.className = 'btn-sm btn-del';
                     btnDel.textContent = 'Hapus';
                     btnDel.addEventListener('click', () => handleDelete(it.filename));
                     tdAksi.appendChild(btnDel);
 
+                    // urutan append kolom
                     tr.appendChild(tdNo);
                     tr.appendChild(tdDb);
                     tr.appendChild(tdTgl);
                     tr.appendChild(tdJenis);
+                    tr.appendChild(tdBy);   // ← (BARU)
+                    tr.appendChild(tdSize);
                     tr.appendChild(tdAksi);
                     tbody.appendChild(tr);
                 });

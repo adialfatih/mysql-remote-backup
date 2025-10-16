@@ -1,2 +1,35 @@
 192.168.10.173
 00.fa.de.51.a2.09
+
+
+Cara backup Aplikasi Monitoring AJL Rindang :
+
+1. Ketik URL -> http://192.168.200.5:3003/
+2. Masukan data
+	- Host 		: 153.92.15.11
+    - User		: u670640922_rindang_ajl
+	- Database 	: u670640922_grand_new_ajl
+	- Password	: 0SmJGlE#T4m/
+3. Klik Simpan Backup
+
+
+Cara backup Aplikasi Inspect dan Pengiriman RJS :
+
+1. Ketik URL -> http://192.168.200.5:3003/
+2. Masukan data
+	- Host 		: 153.92.15.11
+    - User		: u670640922_grandrjs
+	- Database 	: u670640922_grand_stok_rjs
+	- Password	: P@j8FEo5xz
+3. Klik Simpan Backup
+
+
+Cara backup Aplikasi Sparepart RJS : 
+
+1. Ketik URL -> http://192.168.200.5:3003/
+2. Masukan data
+	- Host 		: 153.92.15.11
+	- User		: u670640922_spartrjs
+	- Database 	: u670640922_spartrjs
+	- Password	: RJSsparepart123
+3. Klik Simpan Backup

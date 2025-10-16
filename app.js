@@ -239,13 +239,36 @@ app.get('/api/backups', async (req, res) => {
         // Contoh nama file: dbku_schema_20251016_091234.sql  /  dbku_data_20251016_091234.sql
         const items = files
             .filter(f => f.endsWith('.sql'))
+            // .map(f => {
+            //     const m = f.match(/^(.+?)_(schema|data)_(\d{8}_\d{6})\.sql$/i);
+            //     if (!m) return null;
+            //     const [, dbname, kind, ts] = m; // ts: YYYYMMDD_HHMMSS
+            //     const y = ts.slice(0, 4), mo = ts.slice(4, 6), d = ts.slice(6, 8),
+            //         hh = ts.slice(9, 11), mm = ts.slice(11, 13), ss = ts.slice(13, 15);
+            //     const iso = `${y}-${mo}-${d}T${hh}:${mm}:${ss}Z`;
+            //     return {
+            //         db: dbname,
+            //         type: kind === 'schema' ? 'Struktur' : 'Data',
+            //         tsRaw: ts,
+            //         tsISO: iso,
+            //         tsDisplay: `${d}-${mo}-${y} ${hh}:${mm}:${ss}`,
+            //         filename: f,
+            //         url: `/backup/database/${f}`
+            //     };
+            // })
             .map(f => {
+                const fullPath = path.join(BACKUP_DIR, f);
+                const stat = fs.statSync(fullPath);
+                const sizeBytes = stat.size;
+                const sizeMB = (sizeBytes / 1024 / 1024).toFixed(2) + ' MB';
+
                 const m = f.match(/^(.+?)_(schema|data)_(\d{8}_\d{6})\.sql$/i);
                 if (!m) return null;
-                const [, dbname, kind, ts] = m; // ts: YYYYMMDD_HHMMSS
+                const [, dbname, kind, ts] = m;
                 const y = ts.slice(0, 4), mo = ts.slice(4, 6), d = ts.slice(6, 8),
                     hh = ts.slice(9, 11), mm = ts.slice(11, 13), ss = ts.slice(13, 15);
                 const iso = `${y}-${mo}-${d}T${hh}:${mm}:${ss}Z`;
+
                 return {
                     db: dbname,
                     type: kind === 'schema' ? 'Struktur' : 'Data',
@@ -253,7 +276,8 @@ app.get('/api/backups', async (req, res) => {
                     tsISO: iso,
                     tsDisplay: `${d}-${mo}-${y} ${hh}:${mm}:${ss}`,
                     filename: f,
-                    url: `/backup/database/${f}`
+                    url: `/backup/database/${f}`,
+                    size: sizeMB
                 };
             })
             .filter(Boolean)
